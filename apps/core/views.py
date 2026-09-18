@@ -45,9 +45,54 @@ def dashboard(request):
             "title": "Operations overview",
             "risks": context["assessments"][:8],
             "events": Event.objects.filter(mode=dataset(request)).order_by("-occurred_at")[:4],
+            "scenario": next(
+                (r for r in context["assessments"] if r.event and r.event.kind == "earthquake"),
+                None,
+            ),
         }
     )
     return render(request, "dashboard.html", context)
+
+
+@require_GET
+def investigation(request, pk):
+    mode = dataset(request)
+    risk = get_object_or_404(
+        Assessment.objects.select_related(
+            "run", "event", "source__site__supplier", "requirement__part", "requirement__factory"
+        ),
+        pk=pk,
+        run__mode=mode,
+    )
+    candidates = (
+        Sourcing.objects.filter(part=risk.requirement.part, site__mode=mode, active=True)
+        .exclude(site__supplier=risk.source.site.supplier)
+        .select_related("site__supplier")
+    )
+    alternatives = []
+    for candidate in candidates:
+        candidate.lead_delta = candidate.lead_time_days - risk.source.lead_time_days
+        candidate.cost_difference = candidate.cost_delta_pct - risk.source.cost_delta_pct
+        candidate.within_coverage = (
+            risk.days_of_supply is not None and candidate.lead_time_days <= risk.days_of_supply
+        )
+        alternatives.append(candidate)
+    inventory = (
+        risk.requirement.inventory.filter(date__lte=risk.run.as_of.date()).order_by("-date").first()
+    )
+    return render(
+        request,
+        "investigation.html",
+        {
+            "title": "From disruption to decision",
+            "active": "supply-chain",
+            "risk": risk,
+            "as_of": risk.run.as_of,
+            "inventory": inventory,
+            "alternatives": alternatives,
+            "has_approved": any(c.qualification == "approved" for c in alternatives),
+        },
+    )
 
 
 @require_GET

@@ -1,5 +1,17 @@
 {% extends "base.html" %}
 {% block content %}
+    <section class="panel welcome">
+        <div>
+            <div class="eyebrow">Know what needs attention next</div>
+            <h2>Which disruption could stop production?</h2>
+            <p>Follow an event to the supplier, part and factory it affects. Compare inventory coverage with replenishment options before deciding what to investigate.</p>
+        </div>
+        {% if scenario %}
+            <a class="btn primary" href="/investigations/{{ scenario.pk }}/?mode={{ mode }}">{% if mode == 'demo' %}Explore the earthquake scenario{% else %}Investigate earthquake exposure{% endif %} &rarr;</a>
+        {% else %}
+            <a class="btn" href="/data-health/?mode={{ mode }}">Check data availability &rarr;</a>
+        {% endif %}
+    </section>
     <div class="kpis">
         <div class="kpi">
             <div class="kpi-label">Critical dependencies</div>
@@ -51,6 +63,7 @@
                 <div class="event-item">
                     <span class="badge {% if event.kind == 'earthquake' %}CRITICAL{% else %}HIGH{% endif %}">{{ event.kind|upper }}</span>
                     <div class="event-title">{{ event.title }}</div>
+                    <a class="muted-link" href="/global-risk/?mode={{ mode }}&amp;event={{ event.pk }}">See affected dependencies &rarr;</a>
                     <div class="event-meta">
                         {{ event.occurred_at|date:'d M Y · H:i' }} UTC
                         <br>

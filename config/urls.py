@@ -19,6 +19,7 @@ for prefix, view, name in [
 
 urlpatterns = [
     path("", views.dashboard, name="dashboard"),
+    path("investigations/<int:pk>/", views.investigation, name="investigation"),
     path("admin/", admin.site.urls),
     path("analytics/", analytics),
     path("health/", views.health),

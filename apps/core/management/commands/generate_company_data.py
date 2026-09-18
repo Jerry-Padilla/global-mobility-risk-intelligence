@@ -134,6 +134,18 @@ class Command(BaseCommand):
                     "is_primary": True,
                 },
             )
+            if i == 0:
+                Sourcing.objects.update_or_create(
+                    part=part,
+                    site=sites[7],
+                    defaults={
+                        "lead_time_days": 28,
+                        "qualification": "pending",
+                        "is_primary": False,
+                        "active": True,
+                        "cost_delta_pct": 12,
+                    },
+                )
             if i % 3 and i != 0:
                 Sourcing.objects.update_or_create(
                     part=part,

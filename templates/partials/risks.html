@@ -17,6 +17,7 @@
                            href="/suppliers/{{ r.source.site.supplier_id }}/?mode={{ mode }}">
                         {{ r.source.site.supplier.name }}</a>
                         <div class="entity-sub">{{ r.requirement.part.number }} · {{ r.requirement.part.description }}</div>
+                        <a class="muted-link" href="/investigations/{{ r.pk }}/?mode={{ mode }}">Investigate &rarr;</a>
                     </td>
                     <td>
                         <a href="/factories/{{ r.requirement.factory_id }}/?mode={{ mode }}">{{ r.requirement.factory.name }}</a>

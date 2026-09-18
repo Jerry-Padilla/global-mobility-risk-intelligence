@@ -44,6 +44,17 @@ with sync_playwright() as p:
     page.goto(base, wait_until="networkidle")
     page.locator(".leaflet-interactive").first.wait_for()
     page.screenshot(path=str(output / "dashboard.png"), full_page=True)
+    page.get_by_role("link", name="Explore the earthquake scenario").click()
+    page.wait_for_load_state("networkidle")
+    assert page.get_by_role("heading", name="4 / Compare sourcing options").count() == 1
+    assert "Complete qualification before use" in page.locator("#options").inner_text()
+    page.screenshot(path=str(output / "investigation.png"), full_page=True)
+    investigation_url = page.url
+    page.set_viewport_size({"width": 390, "height": 844})
+    page.goto(investigation_url, wait_until="networkidle")
+    assert page.evaluate("document.documentElement.scrollWidth <= window.innerWidth")
+    page.set_viewport_size({"width": 1440, "height": 1100})
+    page.goto(base, wait_until="networkidle")
     page.locator("a.entity-name").first.click()
     page.wait_for_load_state("networkidle")
     assert page.locator("h2", has_text="Component dependencies").count() == 1

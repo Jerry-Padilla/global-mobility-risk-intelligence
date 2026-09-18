@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block content %}
+    <nav class="journey" aria-label="Investigation steps">
+        <a href="#event">1. Event</a><a href="#dependency">2. Dependency</a><a href="#inventory">3. Inventory</a><a href="#options">4. Options</a>
+    </nav>
+    <section class="panel welcome">
+        <div><span class="badge {{ risk.classification }}">{{ risk.classification }} {% if risk.score != None %}{{ risk.score|floatformat:0 }}{% endif %}</span>
+            <h2>{{ risk.requirement.part.description }} at {{ risk.requirement.factory.name }}</h2>
+            <p>{{ risk.explanation }}</p>
+            <p class="subtle">Assessment: {{ risk.run.as_of|date:'d M Y H:i' }} UTC · Model {{ risk.run.model_version }}. This is a prioritization heuristic, not a damage probability. Historical assessments do not represent today's inventory.</p>
+        </div>
+    </section>
+    <div class="equal-col">
+        <section class="panel welcome" id="event">
+            <div>
+                <div class="eyebrow">1 / Evidence</div><h2>{% if risk.event %}{{ risk.event.title }}{% else %}No event linked{% endif %}</h2>
+                {% if risk.event %}<p>{{ risk.event.occurred_at|date:'d M Y H:i' }} UTC · {{ risk.event.kind|title }}</p>
+                <p class="subtle">Source: {{ risk.event.source }} · Record {{ risk.event.source_id }}. Source updated: {{ risk.event.source_updated_at|date:'d M Y H:i'|default:'Not supplied' }}.</p>
+                <p>{{ risk.distance_km|floatformat:1 }} km to the nearest affected site. Proximity indicates exposure, not confirmed damage.</p>
+                <a class="muted-link"
+                   href="/global-risk/?mode={{ mode }}&amp;event={{ risk.event_id }}">View event on map →</a>
+            {% else %}<p>This assessment reflects inventory and sourcing conditions without a linked environmental event.</p>{% endif %}
+        </div>
+    </section>
+    <section class="panel welcome" id="dependency">
+        <div>
+            <div class="eyebrow">2 / Production dependency</div>
+            <h2>{{ risk.requirement.part.number }}</h2>
+            <p><a class="muted-link"
+   href="/suppliers/{{ risk.source.site.supplier_id }}/?mode={{ mode }}">{{ risk.source.site.supplier.name }}</a> supplies {{ risk.requirement.part.description }} to <a class="muted-link"
+    href="/factories/{{ risk.requirement.factory_id }}/?mode={{ mode }}">{{ risk.requirement.factory.name }}</a>.</p>
+            <p>Current source lead time: <strong>{{ risk.source.lead_time_days }} days</strong>. Factory consumption: <strong>{{ risk.requirement.daily_usage|floatformat:0 }} units/day</strong>.</p>
+        </div>
+    </section>
+</div>
+<section class="panel welcome" id="inventory">
+    <div>
+        <div class="eyebrow">3 / Time to respond</div>
+        <h2>Inventory coverage and estimated stockout</h2>
+        {% if inventory %}<p>{{ inventory.quantity|floatformat:0 }} units on hand, recorded {{ inventory.date|date:'d M Y' }}. Safety stock: {{ inventory.safety_stock|floatformat:0 }} units.</p>{% else %}<p>Inventory is missing. Confirm stock before making a replenishment decision.</p>{% endif %}
+        <p>Coverage: <strong>{% if not risk.requirement.daily_usage %}No current consumption{% elif risk.days_of_supply != None %}{{ risk.days_of_supply|floatformat:1 }} days{% else %}Unknown{% endif %}</strong>. Estimated stockout: <strong>{{ risk.stockout_on|date:'d M Y'|default:'Not estimated' }}</strong>.</p>
+        <p class="subtle">Stockout estimates use consumption and eligible inbound shipments. Confirm actual stock, shipment arrival and supplier capacity before acting.</p>
+    </div>
+</section>
+<section class="panel" id="options">
+    <div class="panel-head">
+        <h2>4 / Compare sourcing options</h2>
+    </div>
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Alternative supplier</th>
+                    <th>Qualification</th>
+                    <th>Lead time</th>
+                    <th>Cost difference</th>
+                    <th>Decision check</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for candidate in alternatives %}
+                    <tr>
+                        <td><a class="entity-name"
+   href="/suppliers/{{ candidate.site.supplier_id }}/?mode={{ mode }}">{{ candidate.site.supplier.name }}</a></td>
+                        <td>{{ candidate.get_qualification_display }}</td>
+                        <td>
+                            {{ candidate.lead_time_days }} days
+                            <div class="subtle">{{ candidate.lead_delta }} days vs current</div>
+                        </td>
+                        <td>
+                            {{ candidate.cost_difference|floatformat:1 }} percentage points
+                            <div class="subtle">Both quotes relative to part base cost</div>
+                        </td>
+                        <td>{% if candidate.qualification != "approved" %}Complete qualification before use{% elif candidate.within_coverage %}Lead time fits coverage; confirm capacity{% else %}Coverage gap; confirm expedited delivery{% endif %}<div class="subtle">Available supplier inventory is unknown</div></td>
+                    </tr>{% empty %}<tr><td colspan="5" class="empty">No active alternative source is recorded. Ask sourcing to identify and qualify a candidate.</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="welcome">
+        <div>
+            <h3>Recommended next checks</h3>
+            <ol class="next-checks">
+                <li>Confirm supplier operating status and the latest delivery commitment.</li>
+                <li>Reconcile factory stock and inbound shipments against the estimated stockout.</li>
+                <li>{% if has_approved %}Request capacity and delivery confirmation from approved alternatives.{% else %}Escalate the qualification gap to sourcing; pending sources are not ready for production use.{% endif %}</li>
+            </ol>
+            <p class="subtle">These are suggested checks. No purchase, reroute or supplier contact has been initiated.</p>
+        </div>
+    </div>
+</section>
+<section class="panel">
+    <div class="panel-head">
+        <h2>Why this score?</h2>
+    </div>
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Factor</th>
+                    <th>Normalized exposure</th>
+                    <th>Score contribution</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for name, factor in risk.factors.items %}<tr><td>{{ name|factor_label }}</td><td>{{ factor.normalized|floatformat:2 }}</td><td>{{ factor.contribution|floatformat:1 }}</td></tr>{% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

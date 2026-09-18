@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: meridian-demo
+    runtime: docker
+    plan: free
+    dockerCommand: sh scripts/start-demo.sh
+    healthCheckPath: /health/
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: DJANGO_DEBUG
+        value: "false"
+      - key: DATABASE_URL
+        sync: false
+      - key: ANALYTICS_BACKEND
+        value: duckdb
+      - key: DATA_ROOT
+        value: /app/data/runtime

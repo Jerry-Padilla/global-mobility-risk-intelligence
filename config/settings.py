@@ -4,6 +4,8 @@ from pathlib import Path
 from django.core.exceptions import ImproperlyConfigured
 from dotenv import load_dotenv
 
+from config.database import database_config
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv(BASE_DIR / ".env")
 DEBUG = os.getenv("DJANGO_DEBUG", "false").lower() == "true"
@@ -16,6 +18,9 @@ if not SECRET_KEY:
             "Set SECRET_KEY or explicitly enable DEBUG for local development"
         )
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,testserver").split(",")
+if os.getenv("RENDER_EXTERNAL_HOSTNAME"):
+    ALLOWED_HOSTS.append(os.environ["RENDER_EXTERNAL_HOSTNAME"])
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 CSRF_TRUSTED_ORIGINS = [v for v in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if v]
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -74,6 +79,9 @@ DATABASES = {
         "OPTIONS": {"connect_timeout": 5},
     }
 }
+if os.getenv("DATABASE_URL"):
+    DATABASES["default"] = database_config(os.environ["DATABASE_URL"])
+
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},

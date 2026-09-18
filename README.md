@@ -8,6 +8,10 @@ The central question is operational: **which dependency needs attention, why, an
 
 ## Explore the product
 
+**Start here:** open the dashboard and select **Explore the earthquake scenario**. In one guided investigation, follow the disruption to a semiconductor dependency, factory inventory and alternative sourcing checks. Pending qualification and unknown capacity stay explicit; recommendations never execute purchases or contact suppliers.
+
+**Public hosting:** [Render + Neon setup](docs/hosting.md) includes a free-tier demo blueprint and restart recovery. No public deployment is claimed until provider setup and hosted checks are complete.
+
 - **Operations overview:** priority dependencies, coverage, affected entities, map and event watch.
 - **Global risk:** earthquakes, weather hazards and the dependencies exposed to them.
 - **Supply chain:** supplier → part → factory paths, stock coverage and sourcing concentration.
