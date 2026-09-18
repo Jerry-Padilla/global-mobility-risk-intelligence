@@ -1,0 +1,11 @@
+USE DATABASE MOBILITY;
+USE SCHEMA GOLD;
+CREATE TABLE IF NOT EXISTS "publications" ("mode" VARCHAR, "version" VARCHAR);
+CREATE TABLE IF NOT EXISTS "supplier_risk_summary" ("mode" VARCHAR,"date" VARCHAR,"supplier_id" BIGINT,"supplier" VARCHAR,"score" DOUBLE,"affected_factories" BIGINT,"model_version" VARCHAR,"publication_version" VARCHAR);
+CREATE TABLE IF NOT EXISTS "factory_risk_summary" ("mode" VARCHAR,"date" VARCHAR,"factory_id" BIGINT,"factory" VARCHAR,"score" DOUBLE,"exposed_parts" BIGINT,"model_version" VARCHAR,"publication_version" VARCHAR);
+CREATE TABLE IF NOT EXISTS "inventory_exposure" ("mode" VARCHAR,"date" VARCHAR,"factory_id" BIGINT,"factory" VARCHAR,"part_id" BIGINT,"part" VARCHAR,"score" DOUBLE,"coverage" DOUBLE,"publication_version" VARCHAR);
+CREATE TABLE IF NOT EXISTS "event_supplier_exposure" ("mode" VARCHAR,"date" VARCHAR,"event_id" BIGINT,"supplier_id" BIGINT,"supplier" VARCHAR,"distance_km" DOUBLE,"score" DOUBLE,"publication_version" VARCHAR);
+CREATE TABLE IF NOT EXISTS "automotive_complaint_trends" ("mode" VARCHAR,"vehicle_id" BIGINT,"make" VARCHAR,"model" VARCHAR,"year" BIGINT,"component" VARCHAR,"month" VARCHAR,"count" BIGINT,"crashes" BIGINT,"fires" BIGINT,"injuries" BIGINT,"publication_version" VARCHAR);
+CREATE TABLE IF NOT EXISTS "vehicle_failure_summary" ("mode" VARCHAR,"vehicle_id" BIGINT,"make" VARCHAR,"model" VARCHAR,"year" BIGINT,"component" VARCHAR,"count" BIGINT,"publication_version" VARCHAR);
+CREATE TABLE IF NOT EXISTS "recall_summary" ("campaign" VARCHAR,"reported_on" VARCHAR,"component" VARCHAR,"summary" VARCHAR,"mode" VARCHAR,"publication_version" VARCHAR);
+CREATE TABLE IF NOT EXISTS "automotive_anomalies" ("vehicle_id" BIGINT,"component" VARCHAR,"month" VARCHAR,"observed" BIGINT,"expected" DOUBLE,"threshold" DOUBLE,"increase_pct" DOUBLE,"severity" VARCHAR,"mode" VARCHAR,"model_version" VARCHAR,"publication_version" VARCHAR);

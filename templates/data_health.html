@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block content %}
+    <section class="panel">
+        <div class="panel-head">
+            <h2>Source freshness</h2>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Source</th>
+                    <th>Last successful sync</th>
+                    <th>Watermark</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in states %}
+                    <tr>
+                        <td>{{ s.source }}</td>
+                        <td>
+                            {{ s.last_success|default_if_none:'Never' }}
+                            <div class="entity-sub">
+                                {% if s.last_success %}
+                                    {{ s.last_success|timesince }} ago{% endif %}
+                            </div>
+                        </td>
+                        <td>{{ s.watermark|default_if_none:'Not established' }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="3"
+                            class="empty">No ingestion has run in this dataset. Demo scenarios are generated locally.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+    <section class="panel">
+        <div class="panel-head">
+            <h2>Pipeline executions</h2>
+        </div>
+        <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Source</th>
+                        <th>Started / finished</th>
+                        <th>Loaded</th>
+                        <th>Skipped</th>
+                        <th>Rejected</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for r in runs %}
+                        <tr>
+                            <td>
+                                {{ r.source }}{% if r.error %}
+                                <div class="entity-sub">{{ r.error }}</div>
+                    {% endif %}
+                </td>
+                <td>
+                    {{ r.started_at }}
+                    <div class="entity-sub">{{ r.finished_at|default_if_none:'Running' }}</div>
+                </td>
+                <td>{{ r.loaded }}</td>
+                <td>{{ r.skipped }}</td>
+                <td>{{ r.rejected }}</td>
+                <td>
+                    <span class="badge {{ r.status }}">{{ r.status }}</span>
+                </td>
+            </tr>
+{% empty %}
+    <tr>
+        <td colspan="6" class="empty">No pipeline executions recorded.</td>
+    </tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</section>
+<section class="panel">
+    <div class="panel-head">
+        <h2>Quality exceptions</h2>
+    </div>
+    <table>
+        <thead>
+            <tr>
+                <th>Source record</th>
+                <th>Reason</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for i in issues %}
+                <tr>
+                    <td>{{ i.run.source }} / {{ i.source_id }}</td>
+                    <td>{{ i.reason }}</td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="2" class="empty">No rejected records recorded.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+{% endblock %}

@@ -1,0 +1,45 @@
+<div class="table-scroll">
+    <table>
+        <thead>
+            <tr>
+                <th>{{ kind|title }}</th>
+                <th>Location</th>
+                <th>{% if is_supplier %}Annual spend{% else %}Annual capacity{% endif %}</th>
+                <th>Criticality</th>
+                <th>Current risk</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for obj in page_obj %}
+                <tr>
+                    <td>
+                        <a class="entity-name" href="/{{ kind }}/{{ obj.pk }}/?mode={{ mode }}">{{ obj.name }}</a>
+                        <div class="entity-sub">{{ obj.code }}</div>
+                    </td>
+                    <td>
+                        {{ obj.location.city }}
+                        <div class="entity-sub">{{ obj.location.country }}</div>
+                    </td>
+                    <td>
+                        {% if is_supplier %}${{ obj.annual_spend|floatformat:'0g' }}{% else %}
+                            {{ obj.production_capacity|floatformat:'0g' }} units{% endif %}
+                    </td>
+                    <td>{{ obj.criticality }} / 5</td>
+                    <td>
+                        {% if obj.risk %}
+                            <span class="badge {{ obj.risk.classification }}">
+                            {{ obj.risk.classification }} {{ obj.risk.score|floatformat:0 }}</span>
+                        {% else %}
+                            <span class="subtle">Not assessed</span>
+                        {% endif %}
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5" class="empty">No {{ kind }} match this dataset or search.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% include "partials/pagination.html" %}

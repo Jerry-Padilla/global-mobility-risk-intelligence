@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="kpis">
+        <div class="kpi">
+            <div class="kpi-label">Critical dependencies</div>
+            <div class="kpi-value danger">{{ critical }}</div>
+            <div class="kpi-note">Immediate review</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Suppliers at risk</div>
+            <div class="kpi-value">{{ suppliers }}</div>
+            <div class="kpi-note">High + critical exposure</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Factories affected</div>
+            <div class="kpi-value">{{ factories }}</div>
+            <div class="kpi-note">Downstream dependencies</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Parts exposed</div>
+            <div class="kpi-value">{{ parts }}</div>
+            <div class="kpi-note">Distinct components</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Average coverage</div>
+            <div class="kpi-value">
+                {{ coverage|default_if_none:'—' }}<span class="text-sm"> d</span>
+            </div>
+            <div class="kpi-note">Current inventory</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Safety anomalies</div>
+            <div class="kpi-value">{{ anomalies }}</div>
+            <div class="kpi-note">Completed-month signals</div>
+        </div>
+    </div>
+    <div class="two-col">
+        <section class="panel">
+            <div class="panel-head">
+                <h2>Global exposure monitor</h2>
+                <a class="muted-link" href="/global-risk/?mode={{ mode }}">Explore map ↗</a>
+            </div>
+            {% include "partials/map.html" %}
+        </section>
+        <section class="panel">
+            <div class="panel-head">
+                <h2>Event watch</h2>
+                <span class="subtle">Latest signals</span>
+            </div>
+            {% for event in events %}
+                <div class="event-item">
+                    <span class="badge {% if event.kind == 'earthquake' %}CRITICAL{% else %}HIGH{% endif %}">{{ event.kind|upper }}</span>
+                    <div class="event-title">{{ event.title }}</div>
+                    <div class="event-meta">
+                        {{ event.occurred_at|date:'d M Y · H:i' }} UTC
+                        <br>
+                        {{ event.latitude|floatformat:2 }}°, {{ event.longitude|floatformat:2 }}°
+                    </div>
+                </div>
+            {% empty %}
+                <div class="empty">
+                    No events ingested.
+                    <br>
+                    Source freshness appears in Data health.
+                </div>
+            {% endfor %}
+        </section>
+    </div>
+    <section class="panel">
+        <div class="panel-head">
+            <h2>Priority investigation queue</h2>
+            <a class="muted-link" href="/supply-chain/?mode={{ mode }}">All dependencies →</a>
+        </div>
+        {% include "partials/risks.html" %}
+    </section>
+{% endblock %}

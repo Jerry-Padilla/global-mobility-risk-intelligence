@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block content %}
+    <section class="panel">
+        <form class="filters">
+            <input type="hidden" name="mode" value="{{ mode }}">
+            <label>
+                Supplier<select name="supplier">
+                <option value="">All suppliers</option>
+                {% for s in suppliers %}
+                    <option value="{{ s.pk }}"
+                            {% if request.GET.supplier == s.pk|stringformat:'s' %}selected{% endif %}>
+                        {{ s.name }}
+                    </option>
+                {% endfor %}
+                </select>
+            </label>
+            <button class="btn btn-primary">Trace dependencies</button>
+        </form>
+        <div class="panel-head">
+            <h2>Supplier → component → factory</h2>
+            <span class="subtle">Top 30 dependencies</span>
+        </div>
+        <div class="panel-body">
+            {% for row in graph %}
+                <div class="graph-row">
+                    <div class="graph-node {% if row.score >= 50 %}exposed{% endif %}">{{ row.supplier }}</div>
+                    <span>→</span>
+                    <div class="graph-node">{{ row.part }}</div>
+                    <span>→</span>
+                    <div class="graph-node {% if row.score >= 50 %}exposed{% endif %}">{{ row.factory }}</div>
+                </div>
+            {% empty %}
+                <div class="empty">No dependency assessments.</div>
+            {% endfor %}
+        </div>
+    </section>
+    <section class="panel">
+        <div class="panel-head">
+            <h2>Inventory and sourcing exposure</h2>
+        </div>
+        {% include "partials/risks.html" %}
+    </section>
+{% endblock %}

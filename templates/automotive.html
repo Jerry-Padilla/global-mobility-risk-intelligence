@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% block content %}
+    <section class="panel">
+        <form class="filters">
+            <input type="hidden" name="mode" value="{{ mode }}">
+            <label>
+                Make<input name="make" value="{{ request.GET.make }}" placeholder="e.g. Aster">
+            </label>
+            <label>
+                Model<input name="model" value="{{ request.GET.model }}" placeholder="e.g. E4">
+            </label>
+            <label>
+                Year<input name="year"
+       type="number"
+       value="{{ request.GET.year }}"
+       style="width:85px">
+            </label>
+            <label>
+                Component<input name="component"
+       value="{{ request.GET.component }}"
+       placeholder="STEERING">
+            </label>
+            <label>
+                From<input type="date" name="start" value="{{ request.GET.start }}">
+            </label>
+            <label>
+                Through<input type="date" name="end" value="{{ request.GET.end }}">
+            </label>
+            <button class="btn btn-primary">Apply filters</button>
+        </form>
+    </section>
+    <div class="kpis">
+        <div class="kpi">
+            <div class="kpi-label">Complaints</div>
+            <div class="kpi-value">{{ totals.count }}</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Recall campaigns</div>
+            <div class="kpi-value">{{ recall_count }}</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Crash reports</div>
+            <div class="kpi-value">{{ totals.crashes }}</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Fire reports</div>
+            <div class="kpi-value">{{ totals.fires }}</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Reported injuries</div>
+            <div class="kpi-value">{{ totals.injuries|default_if_none:0 }}</div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Anomalies</div>
+            <div class="kpi-value">{{ anomalies|length }}</div>
+        </div>
+    </div>
+    {% if active == "vehicle-safety" %}
+        <div class="equal-col">
+            <section class="panel">
+                <div class="panel-head">
+                    <h2>Complaint volume over time</h2>
+                </div>
+                <div id="complaint-timeline" class="chart"></div>
+            </section>
+            <section class="panel">
+                <div class="panel-head">
+                    <h2>Component Pareto</h2>
+                </div>
+                <div id="component-chart" class="chart"></div>
+            </section>
+        </div>
+        <div class="equal-col">
+            <section class="panel">
+                <div class="panel-head">
+                    <h2>Model-year comparison</h2>
+                </div>
+                <div id="year-chart" class="chart"></div>
+            </section>
+            <section class="panel">
+                <div class="panel-head">
+                    <h2>Recall timeline</h2>
+                </div>
+                <div id="recall-chart" class="chart"></div>
+            </section>
+        </div>
+        <section class="panel">
+            <div class="panel-head">
+                <h2>Statistical investigation signals</h2>
+                <span class="subtle">12 complete months of baseline</span>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Vehicle / component</th>
+                        <th>Month</th>
+                        <th>Observed</th>
+                        <th>Expected / threshold</th>
+                        <th>Signal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in anomalies %}
+                        <tr>
+                            <td>
+                                {{ a.vehicle }}
+                                <div class="entity-sub">{{ a.component }}</div>
+                            </td>
+                            <td>{{ a.month|date:'M Y' }}</td>
+                            <td>{{ a.observed }}</td>
+                            <td>{{ a.expected|floatformat:1 }} / {{ a.threshold|floatformat:1 }}</td>
+                            <td>
+                                <span class="badge {{ a.severity }}">{{ a.severity }}</span>
+                                {% if a.increase_pct != None %}+{{ a.increase_pct|floatformat:0 }}%{% else %}No prior baseline complaints{% endif %}
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5" class="empty">No anomalies with sufficient baseline coverage.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </section>
+    {% endif %}
+    {{ chart|json_script:'automotive-data' }}
+    <section class="panel">
+        <div class="panel-head">
+            <h2>{% if active == "recalls" %}Recall register{% else %}Complaint evidence{% endif %}</h2>
+            <span class="subtle">Reporting activity, not fleet-adjusted failure rates</span>
+        </div>
+        <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Identifier / vehicle</th>
+                        <th>Date</th>
+                        <th>Component</th>
+                        <th>Evidence</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in page_obj %}
+                        <tr>
+                            {% if active == "recalls" %}
+                                <td>{{ row.campaign }}</td>
+                                <td>{{ row.reported_on }}</td>
+                                <td>{{ row.component }}</td>
+                                <td class="narrative">
+                                    <strong>{{ row.summary }}</strong>
+                                    <p>{{ row.consequence }}</p>
+                                    <p>{{ row.remedy }}</p>
+                                </td>
+                            {% else %}
+                                <td>
+                                    {{ row.source_id }}
+                                    <div class="entity-sub">{{ row.vehicle }}</div>
+                                </td>
+                                <td>{{ row.filed_on }}</td>
+                                <td>
+                                    {{ row.component }}
+                                    <div class="entity-sub">{{ row.categories|join:', ' }}</div>
+                                </td>
+                                <td class="narrative">
+                                    <details>
+                                        <summary>Read complaint narrative</summary>
+                                        {{ row.narrative }}
+                                        <div class="entity-sub">Rule evidence: {{ row.evidence.matches }}</div>
+                                    </details>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" class="empty">No records match these filters.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% include "partials/pagination.html" %}
+    </section>
+{% endblock %}

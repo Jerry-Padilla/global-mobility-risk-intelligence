@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+    <section class="panel">
+        <div class="panel-head">
+            <h2>Published analytical datasets</h2>
+            <span class="subtle">
+                {% if publication %}Published {{ publication.created_at }}{% else %}No publication yet{% endif %}
+            </span>
+        </div>
+        <form class="filters">
+            <input type="hidden" name="mode" value="{{ mode }}">
+            <label>
+                Dataset<select name="dataset">
+                {% for item in datasets %}
+                    <option value="{{ item }}" {% if selected == item %}selected{% endif %}>{{ item }}</option>
+                {% endfor %}
+                </select>
+            </label>
+            <button class="btn btn-primary">Explore dataset</button>
+        </form>
+        {% if error %}
+            <div class="notice-error">{{ error }}</div>
+        {% endif %}
+        <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        {% for c in columns %}
+                            <th>{{ c }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in records %}
+                        <tr>
+                            {% for cell in row %}
+                                <td>{{ cell|default_if_none:'—' }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td class="empty">No published rows. Run the analytical publication command after ingestion and risk calculation.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <div class="panel-body subtle">Showing up to 200 rows from a consistent publication. Dataset grains and calculation methodology are documented in the repository.</div>
+    </section>
+{% endblock %}

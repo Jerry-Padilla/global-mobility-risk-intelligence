@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% load ui %}
+{% block content %}
+    <div class="two-col">
+        <section class="panel">
+            <div class="panel-head">
+                <h2>Risk history</h2>
+                {% if top_risk %}
+                    <span class="badge {{ top_risk.classification }}">
+                    {{ top_risk.classification }} · {{ top_risk.score|floatformat:0 }}</span>
+                {% endif %}
+            </div>
+            <div id="risk-history" class="chart"></div>
+            {{ history|json_script:'risk-history-data' }}
+        </section>
+        <section class="panel">
+            <div class="panel-head">
+                <h2>Operational profile</h2>
+            </div>
+            <div class="panel-body">
+                <div class="metric-row">
+                    <span>Location</span>
+                    <strong>{{ location.city }}, {{ location.country }}</strong>
+                </div>
+                <div class="metric-row">
+                    <span>Coordinates</span>
+                    <span>{{ location.latitude|floatformat:3 }}, {{ location.longitude|floatformat:3 }}</span>
+                </div>
+                <div class="metric-row">
+                    <span>Criticality</span>
+                    <strong>{{ entity.criticality }} / 5</strong>
+                </div>
+                <div class="metric-row">
+                    {% if is_supplier %}
+                        <span>Annual spend</span>
+                        <strong>${{ entity.annual_spend|floatformat:'0g' }}</strong>
+                    {% else %}
+                        <span>Production capacity</span>
+                        <strong>{{ entity.production_capacity|floatformat:'0g' }} units</strong>
+                    {% endif %}
+                </div>
+                {% if is_supplier %}
+                    <div class="metric-row">
+                        <span>Average source lead time</span>
+                        <strong>{{ average_lead_time|floatformat:1|default:'—' }} days</strong>
+                    </div>
+                    <div class="metric-row">
+                        <span>Single-source parts</span>
+                        <strong>{{ single_source_parts }}</strong>
+                    </div>
+                    <div class="metric-row">
+                        <span>Reliability</span>
+                        <strong>{% widthratio entity.reliability 1 100 %}%</strong>
+                    </div>
+                {% else %}
+                    <div class="metric-row">
+                        <span>Current utilization</span>
+                        <strong>{% widthratio entity.utilization 1 100 %}%</strong>
+                    </div>
+                    <div class="metric-row">
+                        <span>Parts below safety stock</span>
+                        <strong>{{ below_safety_stock }}</strong>
+                    </div>
+                    <div class="metric-row">
+                        <span>Product family</span>
+                        <strong>{{ entity.product_family }}</strong>
+                    </div>
+                {% endif %}
+            </div>
+        </section>
+    </div>
+    <section class="panel">
+        <div class="panel-head">
+            <h2>Component dependencies & inventory coverage</h2>
+        </div>
+        {% include "partials/risks.html" %}
+    </section>
+    <div class="equal-col">
+        <section class="panel">
+            <div class="panel-head">
+                <h2>Highest-risk dependency · contributing factors</h2>
+            </div>
+            <div class="panel-body">
+                {% for name,factor in top_risk.factors.items %}
+                    <div class="flex justify-between text-xs">
+                        <span>{{ name|factor_label }}</span>
+                        <strong>{{ factor.contribution }} / {{ factor.weight }} points</strong>
+                    </div>
+                    <div class="factor-track">
+                        <div class="factor-fill"
+                             style="width:{% widthratio factor.normalized 1 100 %}%"></div>
+                    </div>
+                {% empty %}
+                    <div class="empty">No complete assessment.</div>
+                {% endfor %}
+                <p class="subtle">
+                    {{ top_risk.explanation }}{% if top_risk.stockout_on %}
+                    <br>Projected stockout: {{ top_risk.stockout_on }} (eligible inbound included).{% endif %}
+            </p>
+        </div>
+    </section>
+    <section class="panel">
+        <div class="panel-head">
+            <h2>Approved alternative sources</h2>
+        </div>
+        <div class="table-scroll">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Supplier / part</th>
+                        <th>Lead time</th>
+                        <th>Cost delta</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in alternatives %}
+                        <tr>
+                            <td>
+                                <a href="/suppliers/{{ s.site.supplier_id }}/?mode={{ mode }}">{{ s.site.supplier.name }}</a>
+                                <div class="entity-sub">{{ s.part.number }}</div>
+                            </td>
+                            <td>{{ s.lead_time_days }} days</td>
+                            <td>+{{ s.cost_delta_pct }}%</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="3" class="empty">No approved alternative suppliers for these dependencies.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+<section class="panel">
+    <div class="panel-head">
+        <h2>Current shipments</h2>
+    </div>
+    <div class="table-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>Reference</th>
+                    <th>Destination</th>
+                    <th>Arrival</th>
+                    <th>Mode</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in shipments %}
+                    <tr>
+                        <td>{{ s.reference }}</td>
+                        <td>{{ s.factory.name }}</td>
+                        <td>{{ s.estimated_arrival }}</td>
+                        <td>{{ s.shipping_mode }}</td>
+                        <td>
+                            <span class="badge {% if s.status == 'delayed' %}HIGH{% endif %}">{{ s.get_status_display }}</span>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="5" class="empty">No shipments recorded.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+<section class="panel">
+    <div class="panel-head">
+        <h2>Geographic context</h2>
+    </div>
+    {% include "partials/map.html" %}
+</section>
+{% endblock %}

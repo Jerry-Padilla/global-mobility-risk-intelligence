@@ -1,0 +1,20 @@
+<div class="map {% if large_map %}large{% endif %}"
+     data-map
+     data-latitude="{{ location.latitude|default_if_none:'' }}"
+     data-longitude="{{ location.longitude|default_if_none:'' }}"
+     role="region"
+     aria-label="Global facility and environmental event map"></div>
+<div class="legend">
+    <span>
+        <i style="background:#167b8d">
+        </i>Factories</span>
+        <span>
+            <i style="background:#5e77a8">
+            </i>Suppliers</span>
+            <span>
+                <i style="background:#d85d45">
+                </i>Earthquakes</span>
+                <span>
+                    <i style="background:#c99b35">
+                    </i>Weather</span>
+                </div>

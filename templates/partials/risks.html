@@ -1,0 +1,55 @@
+<div class="table-scroll">
+    <table>
+        <thead>
+            <tr>
+                <th>Supplier / component</th>
+                <th>Destination</th>
+                <th>Coverage</th>
+                <th>Risk</th>
+                <th>Exposure</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for r in risks %}
+                <tr>
+                    <td>
+                        <a class="entity-name"
+                           href="/suppliers/{{ r.source.site.supplier_id }}/?mode={{ mode }}">
+                        {{ r.source.site.supplier.name }}</a>
+                        <div class="entity-sub">{{ r.requirement.part.number }} · {{ r.requirement.part.description }}</div>
+                    </td>
+                    <td>
+                        <a href="/factories/{{ r.requirement.factory_id }}/?mode={{ mode }}">{{ r.requirement.factory.name }}</a>
+                    </td>
+                    <td>
+                        {% if r.days_of_supply != None %}
+                            {{ r.days_of_supply|floatformat:1 }} days{% else %}
+                            {{ r.explanation }}{% endif %}
+                    </td>
+                    <td>
+                        <span class="badge {{ r.classification }}">
+                            {{ r.classification }} {% if r.score != None %}
+                            {{ r.score|floatformat:0 }}{% endif %}
+                    </span>
+                </td>
+                <td>
+                    {% if r.event %}
+                        {{ r.event.kind|title }}
+                        <div class="entity-sub">{{ r.distance_km|floatformat:0 }} km to nearest affected site</div>
+                    {% else %}
+                        <span class="subtle">Structural exposure</span>
+                    {% endif %}
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="5" class="empty">
+                    No assessments available.
+                    <br>
+                    Load company data and calculate risk to populate this investigation.
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>

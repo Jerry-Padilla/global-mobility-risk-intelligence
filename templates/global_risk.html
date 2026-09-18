@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+    {% if selected_event %}
+        <div class="banner">
+            <strong>Investigating: {{ selected_event.title }}</strong> · {{ selected_event.occurred_at }} · <a href="/global-risk/?mode={{ mode }}">Clear event filter</a>
+        </div>
+    {% endif %}
+    <section class="panel">
+        <div class="panel-head">
+            <h2>Environmental events & company locations</h2>
+            <span class="subtle">Select a marker to investigate</span>
+        </div>
+        {% include "partials/map.html" with large_map=True %}
+    </section>
+    <section class="panel">
+        <div class="panel-head">
+            <h2>Exposed dependencies</h2>
+        </div>
+        {% include "partials/risks.html" %}
+    </section>
+    <section class="panel">
+        <div class="panel-head">
+            <h2>Event register</h2>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Event</th>
+                    <th>Occurred</th>
+                    <th>Magnitude</th>
+                    <th>Source</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in events %}
+                    <tr>
+                        <td>{{ e.title }}</td>
+                        <td>{{ e.occurred_at }}</td>
+                        <td>{{ e.magnitude|default_if_none:'—' }}</td>
+                        <td>{{ e.source }}</td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="4" class="empty">No events in this dataset.</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+{% endblock %}

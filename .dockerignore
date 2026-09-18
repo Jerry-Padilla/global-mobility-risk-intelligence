@@ -1,0 +1,13 @@
+.git
+.venv
+.runtime
+.env
+node_modules
+data/runtime
+staticfiles
+static/vendor
+static/build
+__pycache__
+.pytest_cache
+.ruff_cache
+docs/screenshots

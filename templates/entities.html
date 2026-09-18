@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block content %}
+    <section class="panel">
+        <form class="filters"
+              method="get"
+              hx-get="/{{ kind }}/"
+              hx-target="#entity-results"
+              hx-push-url="true">
+            <input type="hidden" name="mode" value="{{ mode }}">
+            <label>
+                Search {{ kind }}<input name="q" value="{{ q }}" placeholder="Name or location" type="search">
+            </label>
+            <button class="btn btn-primary">Search</button>
+            <span class="htmx-indicator subtle">Updating…</span>
+        </form>
+        <div id="entity-results">{% include "partials/entity_table.html" %}</div>
+    </section>
+{% endblock %}

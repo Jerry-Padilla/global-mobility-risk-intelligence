@@ -1,0 +1,76 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width,initial-scale=1">
+        <title>{{ title }} · Meridian</title>
+        <link rel="stylesheet" href="{% static 'build/app.css' %}">
+        <link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">
+        <script src="{% static 'vendor/htmx.min.js' %}" defer></script>
+        <script src="{% static 'vendor/leaflet/leaflet.js' %}" defer></script>
+        <script src="{% static 'vendor/plotly.min.js' %}" defer></script>
+        <script src="{% static 'app.js' %}" defer></script>
+    </head>
+    <body data-mode="{{ mode }}">
+        <div class="layout">
+            <aside class="sidebar">
+                <a class="brand" href="/?mode={{ mode }}">MERIDIAN<small>MOBILITY RISK INTELLIGENCE</small>
+                </a>
+                <div class="nav-label">Intelligence workspace</div>
+                <nav>
+                    {% for key,label,url in navigation %}
+                        <a href="{{ url }}?mode={{ mode }}"
+                           class="{% if active == key %}active{% endif %}">
+                            <span>{{ forloop.counter|stringformat:'02d' }}</span>
+                        {{ label }}</a>
+                    {% endfor %}
+                </nav>
+                <footer>
+                    <span class="status-dot"></span> Public research workspace
+                    <br>
+                    <a href="/api/docs/">API documentation ↗</a>
+                    <br>
+                    <a href="/admin/">Operator sign in ↗</a>
+                </footer>
+            </aside>
+            <div class="min-w-0">
+                <header class="topbar">
+                    <div class="breadcrumb">
+                        Intelligence / <strong>{{ title }}</strong>
+                    </div>
+                    <form class="mode-switch" method="get">
+                        <span class="subtle">
+                            {% if mode == "demo" %}Synthetic company · demo scenarios{% else %}Public sources · live dataset{% endif %}
+                        </span>
+                        <label class="sr-only" for="mode">Dataset</label>
+                        <select id="mode" name="mode">
+                            <option value="demo" {% if mode == 'demo' %}selected{% endif %}>Demonstration</option>
+                            <option value="live" {% if mode == 'live' %}selected{% endif %}>Live sources</option>
+                        </select>
+                        <button class="btn" type="submit">Apply</button>
+                    </form>
+                </header>
+                <main class="content">
+                    <div class="page-heading">
+                        <div>
+                            <div class="eyebrow">Global mobility & manufacturing</div>
+                            <h1>{{ title }}</h1>
+                        </div>
+                        <span class="subtle">
+                            {% if as_of %}Assessment · {{ as_of|date:'d M Y' }}{% else %}Investigation workspace{% endif %}
+                        </span>
+                    </div>
+                    {% if mode == "demo" %}
+                        <div class="banner">DEMONSTRATION DATA · Company records, disruptions, and Aster vehicle reports are synthetic. Live public data is kept separate.</div>
+                    {% endif %}
+                    {% block content %}{% endblock %}
+                    <div class="page-foot">
+                        <span>MERIDIAN / Operational risk intelligence</span>
+                        <span>Explainable signals. Evidence before action.</span>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </body>
+</html>
