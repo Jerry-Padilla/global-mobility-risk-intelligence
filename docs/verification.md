@@ -4,7 +4,10 @@ Verified on Windows with Python 3.13.2 and an isolated PostgreSQL 17 cluster on 
 
 ## Completed checks
 
-- Full automated suite: **54 passed, 1 skipped**. The skipped test requires opt-in Snowflake credentials.
+- Full automated suite: **57 passed, 1 skipped**. The skipped test requires opt-in Snowflake credentials.
+- Fixed clean-checkout CI failures caused by a missing `.runtime` parent for pytest temporary files. Tests now use the ignored project-root `.pytest_tmp` directory, avoiding both missing-parent errors on Linux and shared temporary-directory permission errors on Windows.
+- GitHub Actions verified commit `7a75e9f` successfully on a clean Linux runner, including PostgreSQL tests and browser checks: https://github.com/Jerry-Padilla/global-mobility-risk-intelligence/actions/runs/35462228869
+- Make, model, year and component dropdowns are covered on recalls, complaints and vehicle-safety pages. Browser verification selects dependent make/model choices and applies a component/date filter.
 - Guided investigation tests verify public read-only access, demo/live isolation and pending qualification. Hosted-demo recovery deletes local publications, restarts bootstrap without reseeding and verifies a readable replacement analytical dataset.
 - Django system checks passed; migration-drift check reported no changes.
 - Ruff lint and formatting checks passed.
