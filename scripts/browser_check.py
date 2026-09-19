@@ -69,7 +69,10 @@ with sync_playwright() as p:
     assert "Taiwan Precision" in page.locator("#entity-results").inner_text()
     page.goto(base + "/vehicle-safety/", wait_until="networkidle")
     page.screenshot(path=str(output / "vehicle-safety.png"), full_page=True)
-    page.locator('input[name="component"]').fill("BATTERY")
+    page.locator('select[name="make"]').select_option("Aster")
+    page.locator('select[name="model"]').select_option("E4")
+    page.locator('select[name="component"]').select_option("STEERING")
+    page.locator('input[name="start"]').fill("2099-01-01")
     page.locator("button", has_text="Apply filters").click()
     page.wait_for_load_state("networkidle")
     assert page.locator("text=No records match these filters.").count() == 1

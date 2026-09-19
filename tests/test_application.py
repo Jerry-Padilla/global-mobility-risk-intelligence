@@ -137,3 +137,15 @@ def test_live_empty_state_and_filters(client, demo):
     assert b"Taiwan Precision" not in response.content
     response = client.get("/complaints/?component=BATTERY")
     assert b"No records match" in response.content
+
+
+@pytest.mark.parametrize("route", ["/recalls/", "/complaints/", "/vehicle-safety/"])
+def test_vehicle_dropdowns_preserve_filters_and_mode(client, demo, route):
+    response = client.get(route, {"make": "Aster", "model": "E4", "component": "STEERING"})
+    assert response.status_code == 200
+    assert b'<select name="make"' in response.content
+    assert b'<select name="component"' in response.content
+    assert b'value="Aster" selected' in response.content
+    assert b"Reset filters" in response.content
+    live = client.get(route, {"mode": "live"})
+    assert b'value="Aster"' not in live.content

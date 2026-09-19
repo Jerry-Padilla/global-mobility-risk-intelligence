@@ -1,25 +1,22 @@
 {% extends "base.html" %}
 {% block content %}
+    {{ vehicle_options|json_script:"vehicle-options" }}
     <section class="panel">
         <form class="filters">
             <input type="hidden" name="mode" value="{{ mode }}">
-            <label>
-                Make<input name="make" value="{{ request.GET.make }}" placeholder="e.g. Aster">
-            </label>
-            <label>
-                Model<input name="model" value="{{ request.GET.model }}" placeholder="e.g. E4">
-            </label>
-            <label>
-                Year<input name="year"
-       type="number"
-       value="{{ request.GET.year }}"
-       style="width:85px">
-            </label>
-            <label>
-                Component<input name="component"
-       value="{{ request.GET.component }}"
-       placeholder="STEERING">
-            </label>
+            {% for filter in filter_options %}
+                <label>{{ filter.label }}
+                    <select name="{{ filter.name }}" data-vehicle-filter="{{ filter.name }}">
+                        <option value="">All {{ filter.label|lower }}s</option>
+                        {% if filter.selected and filter.selected not in filter.values %}
+                            <option value="{{ filter.selected }}" selected>{{ filter.selected }} (not in this dataset)</option>
+                        {% endif %}
+                        {% for value in filter.values %}
+                            <option value="{{ value }}" {% if value == filter.selected %}selected{% endif %}>{{ value }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+            {% endfor %}
             <label>
                 From<input type="date" name="start" value="{{ request.GET.start }}">
             </label>
@@ -27,6 +24,7 @@
                 Through<input type="date" name="end" value="{{ request.GET.end }}">
             </label>
             <button class="btn btn-primary">Apply filters</button>
+            <a class="btn" href="?mode={{ mode }}">Reset filters</a>
         </form>
     </section>
     <div class="kpis">

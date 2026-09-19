@@ -193,3 +193,29 @@ document.addEventListener('htmx:responseError', event => {
     n.textContent = 'The request failed. Please retry.';
     event.detail.target.prepend(n);
 });
+
+// Dependent vehicle choices; the GET form remains usable without JavaScript.
+document.addEventListener('DOMContentLoaded', () => {
+    const data = document.getElementById('vehicle-options');
+    if (!data) return;
+    const vehicles = JSON.parse(data.textContent);
+    const make = document.querySelector('select[name="make"]');
+    const model = document.querySelector('select[name="model"]');
+    const year = document.querySelector('select[name="year"]');
+    function populate(select, values, label) {
+        const selected = select.value;
+        select.replaceChildren(new Option(label, ''));
+        values.forEach(value => select.add(new Option(value, value)));
+        select.value = values.includes(selected) ? selected : '';
+    }
+    function updateYears() {
+        const rows = vehicles.filter(v => (!make.value || v.make === make.value) && (!model.value || v.model === model.value));
+        populate(year, [...new Set(rows.map(v => String(v.year)))].sort().reverse(), 'All years');
+    }
+    make.addEventListener('change', () => {
+        const rows = vehicles.filter(v => !make.value || v.make === make.value);
+        populate(model, [...new Set(rows.map(v => v.model))].sort(), 'All models');
+        updateYears();
+    });
+    model.addEventListener('change', updateYears);
+});

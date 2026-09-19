@@ -284,6 +284,11 @@ def automotive_filters(request, rows, vehicle_prefix="vehicle__"):
 @require_GET
 def automotive(request, section="vehicle-safety"):
     mode = dataset(request)
+    identities = list(Vehicle.objects.filter(mode=mode).values("make", "model", "year"))
+    component_options = sorted(
+        set(Complaint.objects.filter(mode=mode).values_list("component", flat=True))
+        | set(Recall.objects.filter(mode=mode).values_list("component", flat=True))
+    )
     complaints = automotive_filters(
         request, Complaint.objects.filter(mode=mode).select_related("vehicle")
     )
@@ -345,6 +350,24 @@ def automotive(request, section="vehicle-safety"):
             "anomalies": anomalies,
             "page_obj": Paginator(rows, 25).get_page(request.GET.get("page")),
             "vehicles": Vehicle.objects.filter(mode=mode),
+            "vehicle_options": identities,
+            "filter_options": [
+                {
+                    "name": name,
+                    "label": name.title(),
+                    "values": sorted({str(v[name]) for v in identities}, reverse=name == "year"),
+                    "selected": request.GET.get(name, ""),
+                }
+                for name in ("make", "model", "year")
+            ]
+            + [
+                {
+                    "name": "component",
+                    "label": "Component",
+                    "values": [v for v in component_options if v],
+                    "selected": request.GET.get("component", ""),
+                }
+            ],
         },
     )
 

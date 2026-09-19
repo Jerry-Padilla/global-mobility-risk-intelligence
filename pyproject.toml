@@ -15,10 +15,10 @@ dev = ["pytest", "pytest-django", "pytest-cov", "factory-boy", "ruff", "playwrig
 snowflake = ["snowflake-connector-python"]
 
 [tool.pytest.ini_options]
+addopts = "--basetemp=.pytest_tmp"
 DJANGO_SETTINGS_MODULE = "config.settings"
 pythonpath = ["."]
 testpaths = ["tests"]
-addopts = "--basetemp=.runtime/pytest"
 markers = ["browser: requires running application and Chromium", "snowflake: requires warehouse credentials"]
 
 [tool.ruff]
