@@ -2,6 +2,17 @@
 .venv
 .runtime
 .env
+keys
+**/keys
+.ssh
+**/.ssh
+**/*.key
+**/*.pem
+**/*.ppk
+**/*.pub
+**/id_rsa*
+**/id_ed25519*
+.pytest_tmp
 node_modules
 data/runtime
 staticfiles

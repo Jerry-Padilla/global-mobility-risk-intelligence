@@ -1,5 +1,14 @@
 .venv/
 .env
+# Local credentials must never enter source control.
+keys/
+.ssh/
+*.key
+*.pem
+*.ppk
+*.pub
+id_rsa*
+id_ed25519*
 __pycache__/
 *.py[cod]
 .pytest_cache/
