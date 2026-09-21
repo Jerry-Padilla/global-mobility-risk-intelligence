@@ -1,0 +1,7 @@
+.vercel
+.env*
+keys
+**/*.key
+**/*.pem
+**/*.ppk
+**/*.tfstate*

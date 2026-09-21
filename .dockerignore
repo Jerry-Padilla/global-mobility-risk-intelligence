@@ -2,7 +2,21 @@
 .venv
 .runtime
 .env
+.env.*
+!.env.example
+.vercel
+**/.vercel
+.terraform
+**/.terraform
+**/*.tfvars
+**/*.tfvars.json
+**/*.tfplan
+**/*.dump
+**/*.sql.gz
 keys
+terraform zip
+**/*.tfstate
+**/*.tfstate.*
 **/keys
 .ssh
 **/.ssh

@@ -1,7 +1,19 @@
 .venv/
 .env
+.env.*
+!.env.example
+.vercel/
+.terraform/
+*.tfvars
+*.tfvars.json
+*.tfplan
+*.dump
+*.sql.gz
 # Local credentials must never enter source control.
 keys/
+terraform zip/
+*.tfstate
+*.tfstate.*
 .ssh/
 *.key
 *.pem
